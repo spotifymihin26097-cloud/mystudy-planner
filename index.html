@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Study Planner</title>
+<meta name="application-name" content="Study Planner">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Study Plan">
+<meta name="theme-color" content="#0d0f14">
+<meta name="description" content="Personal study planner for AL — Maths, Physics, ICT">
+<link rel="manifest" href="data:application/json,{
+  %22name%22:%22My Study Planner%22,
+  %22short_name%22:%22Study Plan%22,
+  %22description%22:%22AL Study Planner — Maths Physics ICT%22,
+  %22start_url%22:%22.%22,
+  %22display%22:%22standalone%22,
+  %22background_color%22:%22%230d0f14%22,
+  %22theme_color%22:%22%236c63ff%22,
+  %22orientation%22:%22portrait-primary%22,
+  %22icons%22:[
+    {%22src%22:%22data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%230d0f14'/%3E%3Crect x='40' y='40' width='432' height='432' rx='80' fill='%231a1040'/%3E%3Ctext x='256' y='320' font-size='260' text-anchor='middle' fill='white'%3E📚%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any maskable%22}
+  ]
+}">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --surface: #13161e;
+    --card: #181c26;
+    --card2: #1e2333;
+    --border: #252a3a;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --accent4: #ffd166;
+    --text: #e8eaf0;
+    --text2: #8a90a8;
+    --text3: #5a607a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a1040 0%, #0d1a2e 50%, #0d1a1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: calc(20px + var(--safe-top)) 20px 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+  }
+  .header-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header-title span { color: var(--accent); }
+  .streak-badge {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .week-progress-bar {
+    background: var(--border); border-radius: 4px; height: 4px; margin-bottom: 0;
+    overflow: hidden;
+  }
+  .week-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .week-stats {
+    display: flex; gap: 20px; padding: 10px 0 14px; font-size: 12px; color: var(--text2);
+  }
+  .week-stat strong { color: var(--text); font-weight: 600; }
+
+  /* QUOTE BANNER */
+  .quote-banner {
+    margin: 16px; padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.1));
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: var(--radius);
+    font-size: 13px; color: var(--text2);
+    font-style: italic; line-height: 1.5;
+  }
+  .quote-banner strong { color: var(--accent2); font-style: normal; font-family: 'Syne', sans-serif; font-size: 11px; display: block; margin-bottom: 4px; }
+
+  /* SCORE CARD */
+  .scorecard {
+    margin: 0 16px 16px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .score-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 10px; text-align: center;
+  }
+  .score-item .val { font-size: 22px; font-weight: 700; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; }
+  .score-item .lbl { font-size: 10px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-grade { color: var(--accent4); }
+  .score-done { color: var(--green); }
+  .score-missed { color: var(--red); }
+  .score-streak { color: var(--orange); }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 6px; padding: 0 16px 16px; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0; padding: 8px 14px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; font-size: 12px; font-family: 'Syne', sans-serif;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+    color: var(--text2);
+  }
+  .tab.active {
+    background: var(--accent); border-color: var(--accent); color: white;
+  }
+  .tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  /* DAY CARD */
+  .day-section { display: none; padding: 0 16px 100px; }
+  .day-section.active { display: block; }
+
+  .day-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .day-info {}
+  .day-name { font-size: 20px; font-weight: 800; }
+  .day-date { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .day-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--text2); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-icon:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-icon.active-edit { background: var(--accent4); color: #000; border-color: var(--accent4); }
+
+  .day-progress {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+  }
+  .day-progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .day-pct { font-size: 28px; font-weight: 700; font-family: 'Outfit', sans-serif; letter-spacing: -1px; }
+  .day-grade { font-size: 13px; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .grade-a { background: rgba(34,197,94,0.2); color: var(--green); }
+  .grade-b { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .grade-c { background: rgba(249,115,22,0.2); color: var(--orange); }
+  .grade-d { background: rgba(239,68,68,0.2); color: var(--red); }
+  .grade-f { background: rgba(90,96,122,0.2); color: var(--text3); }
+  .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+  .goal-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--text2); }
+  .goal-input { background: var(--border); border: none; border-radius: 6px; padding: 4px 8px; color: var(--text); font-size: 12px; width: 60px; font-family: 'DM Sans', sans-serif; }
+
+  /* TASK */
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .task-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .task-item.done {
+    border-color: rgba(34,197,94,0.4);
+    background: rgba(34,197,94,0.06);
+  }
+  .task-item.missed {
+    border-color: rgba(239,68,68,0.4);
+    background: rgba(239,68,68,0.06);
+  }
+  .task-item.pinned::before {
+    content: '';
+    position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--accent4);
+    border-radius: 3px 0 0 3px;
+  }
+  .task-top { display: flex; align-items: flex-start; gap: 10px; }
+  .task-check {
+    width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0;
+    border: 2px solid var(--border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; transition: all 0.15s; margin-top: 1px;
+    user-select: none;
+  }
+  .task-item.done .task-check { background: var(--green); border-color: var(--green); }
+  .task-item.missed .task-check { background: var(--red); border-color: var(--red); }
+  .task-body { flex: 1; }
+  .task-time {
+    font-size: 11px; color: var(--accent2); font-weight: 600;
+    font-family: 'Syne', sans-serif; margin-bottom: 2px;
+  }
+  .task-name { font-size: 14px; line-height: 1.4; }
+  .task-item.done .task-name { color: var(--text3); text-decoration: line-through; }
+  .task-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .priority-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+  .p-high { background: rgba(239,68,68,0.2); color: var(--red); }
+  .p-med { background: rgba(249,115,22,0.2); color: var(--orange); }
+  .p-low { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .must-badge {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px;
+    background: rgba(239,68,68,0.25); color: var(--red);
+    font-weight: 700; font-family: 'Syne', sans-serif;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .task-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .task-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--card2);
+    color: var(--text2); cursor: pointer; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .task-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .task-btn.pin-active { border-color: var(--accent4); color: var(--accent4); }
+  .task-btn.carry-btn { border-color: var(--orange); color: var(--orange); }
+  .task-btn.del-btn:hover { border-color: var(--red); color: var(--red); }
+  .task-note {
+    margin-top: 8px; padding: 8px 10px;
+    background: var(--card2); border-radius: 8px;
+    font-size: 12px; color: var(--text2); line-height: 1.4;
+    border-left: 2px solid var(--accent);
+  }
+  .note-input {
+    width: 100%; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; color: var(--text); font-size: 12px;
+    font-family: 'DM Sans', sans-serif; margin-top: 8px; resize: none;
+    outline: none;
+  }
+  .note-input:focus { border-color: var(--accent); }
+
+  /* TIMER */
+  .timer-bar {
+    margin-top: 8px; padding: 10px 14px;
+    background: rgba(108,99,255,0.08); border: 1px solid rgba(108,99,255,0.25);
+    border-radius: 10px;
+  }
+  .timer-top { display: flex; align-items: center; gap: 12px; }
+  .timer-display {
+    font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: var(--accent);
+    letter-spacing: 3px; min-width: 110px;
+  }
+  .timer-display.running { color: var(--accent2); animation: timerPulse 1s infinite; }
+  @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+  .timer-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+  .timer-btn {
+    padding: 5px 12px; border-radius: 7px; font-size: 12px;
+    border: 1px solid rgba(108,99,255,0.4); background: transparent;
+    color: var(--accent); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .timer-btn:hover { background: var(--accent); color: white; }
+  .timer-btn.running-btn { background: var(--accent2); border-color: var(--accent2); color: #000; font-weight: 700; }
+  .timer-presets { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+  .preset-btn {
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card2); color: var(--text2);
+    font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: var(--accent4); color: var(--accent4); }
+  .timer-label { font-size: 10px; color: var(--text3); margin-top: 4px; letter-spacing: 0.5px; }
+
+  /* ADD TASK PANEL */
+  .add-task-panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+    display: none;
+  }
+  .add-task-panel.open { display: block; }
+  .add-task-panel h4 { font-size: 14px; margin-bottom: 12px; color: var(--accent2); }
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .form-input {
+    flex: 1; min-width: 120px; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px;
+    font-family: 'DM Sans', sans-serif; outline: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-select {
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 13px;
+    font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer;
+  }
+  .btn-add {
+    padding: 9px 18px; background: var(--accent); color: white;
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-add:hover { background: #5a52e0; }
+  .color-dots { display: flex; gap: 6px; align-items: center; }
+  .color-dot {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s;
+  }
+  .color-dot.selected { border-color: white; transform: scale(1.2); }
+
+  /* SECTION DIVIDER */
+  .section-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text3); margin: 16px 0 8px; font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  /* ACHIEVEMENTS */
+  .achievements-panel {
+    margin: 0 16px 16px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .achievements-title { font-size: 14px; margin-bottom: 12px; color: var(--accent4); }
+  .badges-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    padding: 6px 12px; border-radius: 20px; font-size: 12px;
+    font-family: 'Syne', sans-serif; font-weight: 600;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .badge.locked { background: var(--card2); color: var(--text3); filter: grayscale(1); }
+  .badge.unlocked { background: rgba(255,209,102,0.2); color: var(--accent4); border: 1px solid rgba(255,209,102,0.4); }
+
+  /* MISSED SUMMARY */
+  .missed-summary {
+    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin-top: 16px;
+  }
+  .missed-summary h4 { font-size: 13px; color: var(--red); margin-bottom: 8px; }
+  .missed-item { font-size: 12px; color: var(--text2); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 20px; font-size: 13px;
+    z-index: 999; transition: transform 0.3s ease; white-space: nowrap;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+
+  /* HOMEWORK TRACKER */
+  .hw-view { padding: 16px; padding-bottom: 100px; }
+  .hw-header { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:16px; }
+  .hw-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .hw-sum-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center; }
+  .hw-sum-val { font-family:'Outfit',sans-serif; font-size:22px; font-weight:700; }
+  .hw-sum-lbl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+  .hw-add-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+  .hw-add-card h4 { font-size:14px; color:var(--accent2); margin-bottom:12px; }
+  .hw-subject-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .hw-subj-tab { padding:5px 12px; border-radius:20px; font-size:12px; font-family:'Syne',sans-serif; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--card2); color:var(--text2); transition:all 0.15s; }
+  .hw-subj-tab.active { color:white; border-color:transparent; }
+  .hw-subj-tab[data-s="maths"].active { background:#6c63ff; }
+  .hw-subj-tab[data-s="physics"].active { background:#00d4aa; }
+  .hw-subj-tab[data-s="ict"].active { background:#f97316; }
+  .hw-subj-tab[data-s="other"].active { background:#a855f7; }
+  .hw-list { display:flex; flex-direction:column; gap:8px; }
+  .hw-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; position:relative; transition:all 0.2s; }
+  .hw-item.hw-done { border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.05); }
+  .hw-item.hw-overdue { border-color:rgba(239,68,68,0.4); background:rgba(239,68,68,0.06); animation:pulse 2s infinite; }
+  .hw-item-top { display:flex; align-items:flex-start; gap:10px; }
+  .hw-check { width:24px; height:24px; border-radius:8px; border:2px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; margin-top:1px; transition:all 0.15s; }
+  .hw-item.hw-done .hw-check { background:var(--green); border-color:var(--green); }
+  .hw-body { flex:1; }
+  .hw-subj-badge { display:inline-block; font-size:10px; padding:2px 8px; border-radius:20px; font-weight:700; font-family:'Syne',sans-serif; margin-bottom:4px; }
+  .hw-subj-maths { background:rgba(108,99,255,0.2); color:#6c63ff; }
+  .hw-subj-physics { background:rgba(0,212,170,0.2); color:#00d4aa; }
+  .hw-subj-ict { background:rgba(249,115,22,0.2); color:#f97316; }
+  .hw-subj-other { background:rgba(168,85,247,0.2); color:#a855f7; }
+  .hw-title { font-size:14px; line-height:1.4; }
+  .hw-item.hw-done .hw-title { text-decoration:line-through; color:var(--text3); }
+  .hw-meta { display:flex; gap:8px; align-items:center; margin-top:5px; flex-wrap:wrap; }
+  .hw-due { font-size:11px; color:var(--text3); }
+  .hw-overdue-badge { font-size:10px; padding:2px 7px; border-radius:20px; background:rgba(239,68,68,0.2); color:var(--red); font-weight:700; font-family:'Syne',sans-serif; }
+  .hw-actions { display:flex; gap:6px; margin-top:8px; }
+  .hw-note-text { margin-top:6px; font-size:12px; color:var(--text2); padding:6px 10px; background:var(--card2); border-radius:7px; border-left:2px solid var(--accent); }
+  .hw-filter-row { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+  .hw-filter { padding:5px 12px; border-radius:20px; font-size:12px; cursor:pointer; border:1px solid var(--border); background:var(--card2); color:var(--text2); font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+  .hw-filter.active { background:var(--accent); border-color:var(--accent); color:white; }
+  .section-divider { height:1px; background:var(--border); margin:16px 0; }
+
+  /* CONFETTI */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 9999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; top: -20px;
+    animation: fall linear forwards;
+    border-radius: 2px;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* PATTERN DETECTOR */
+  .pattern-panel {
+    margin: 0 16px 16px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .pattern-title { font-size: 14px; margin-bottom: 10px; color: var(--purple); }
+  .pattern-item { font-size: 12px; color: var(--text2); padding: 4px 0; display: flex; gap: 8px; }
+  .pattern-item span { color: var(--text); font-weight: 500; }
+
+  /* NAV bottom */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; padding: 10px 20px calc(14px + var(--safe-bottom)); gap: 8px; z-index: 50;
+  }
+  .nav-btn {
+    flex: 1; padding: 10px; border-radius: 10px; font-size: 11px;
+    font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--text2); transition: all 0.2s; text-align: center;
+  }
+  .nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .nav-btn div { font-size: 18px; margin-bottom: 2px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ANALYTICS VIEW */
+  .analytics-grid { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
+  .analytics-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .analytics-card h3 { font-size: 15px; margin-bottom: 12px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: height 0.5s ease; min-height: 4px; }
+  .bar-label { font-size: 10px; color: var(--text3); font-family: 'Syne', sans-serif; }
+  .bar-val { font-size: 11px; color: var(--text2); }
+
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type=time] { color-scheme: dark; }
+</style>
+</head>
+<body>
+
+<div id="confettiContainer" class="confetti-container"></div>
+<div id="toast" class="toast">✅ Saved!</div>
+
+<!-- PLANNER VIEW -->
+<div id="view-planner" class="view active">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-title">My <span>Study Plan</span> 📚</div>
+        <div id="syncStatus" style="font-size:11px;color:var(--text3);height:14px;margin-top:1px;"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="cloudLoad()" style="background:rgba(108,99,255,0.2);border:1px solid rgba(108,99,255,0.4);color:var(--accent);border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;" title="Sync now">☁️</button>
+        <div class="streak-badge" id="streakBadge">🔥 0 day streak</div>
+      </div>
+    </div>
+    <div class="week-progress-bar"><div class="week-progress-fill" id="weekProgressFill" style="width:0%"></div></div>
+    <div class="week-stats">
+      <div><strong id="statDone">0</strong> done</div>
+      <div><strong id="statMissed">0</strong> missed</div>
+      <div><strong id="statTotal">0</strong> total tasks</div>
+      <div><strong id="statWeekPct">0%</strong> this week</div>
+    </div>
+  </div>
+
+  <div class="quote-banner" id="quoteBanner">
+    <strong>💬 DAILY MOTIVATION</strong>
+    <span id="quoteText">Loading...</span>
+  </div>
+
+  <div class="scorecard">
+    <div class="score-item"><div class="val score-grade" id="weekGrade">—</div><div class="lbl">Grade</div></div>
+    <div class="score-item"><div class="val score-done" id="scDone">0</div><div class="lbl">Done</div></div>
+    <div class="score-item"><div class="val score-missed" id="scMissed">0</div><div class="lbl">Missed</div></div>
+    <div class="score-item"><div class="val score-streak" id="scStreak">0🔥</div><div class="lbl">Streak</div></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div id="daySections"></div>
+
+</div>
+
+<!-- ANALYTICS VIEW -->
+<div id="view-analytics" class="view">
+  <div class="analytics-grid">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;padding-top:4px;">📊 Analytics</div>
+
+    <div class="analytics-card">
+      <h3>📅 Daily Completion</h3>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+
+    <div class="analytics-card">
+      <h3>🔍 Miss Pattern</h3>
+      <div id="missPattern" class="pattern-item" style="color:var(--text2);font-size:13px;">No data yet — start ticking tasks!</div>
+    </div>
+
+    <div class="analytics-card">
+      <h3>🏆 Achievements</h3>
+      <div class="badges-grid" id="badgesGrid"></div>
+    </div>
+
+    <div class="analytics-card">
+      <h3>📝 Carry-Forward Tasks</h3>
+      <div id="carryList" style="font-size:13px;color:var(--text2);">No carry-forward tasks yet.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<!-- HOMEWORK VIEW -->
+<div id="view-homework" class="view">
+  <div class="hw-view">
+    <div class="hw-header">📋 Homework Tracker</div>
+
+    <div class="hw-summary">
+      <div class="hw-sum-card"><div class="hw-sum-val" id="hwTotal">0</div><div class="hw-sum-lbl">Total</div></div>
+      <div class="hw-sum-card"><div class="hw-sum-val" style="color:var(--green)" id="hwDone">0</div><div class="hw-sum-lbl">Done</div></div>
+      <div class="hw-sum-card"><div class="hw-sum-val" style="color:var(--red)" id="hwOverdue">0</div><div class="hw-sum-lbl">Overdue</div></div>
+    </div>
+
+    <div class="hw-add-card">
+      <h4>➕ Add Homework</h4>
+      <div class="hw-subject-tabs">
+        <div class="hw-subj-tab active" data-s="maths" onclick="pickHWSubj('maths',this)">📐 Maths</div>
+        <div class="hw-subj-tab" data-s="physics" onclick="pickHWSubj('physics',this)">⚡ Physics</div>
+        <div class="hw-subj-tab" data-s="ict" onclick="pickHWSubj('ict',this)">💻 ICT</div>
+        <div class="hw-subj-tab" data-s="other" onclick="pickHWSubj('other',this)">📌 Other</div>
+      </div>
+      <div class="form-row">
+        <input type="text" class="form-input" id="hwTitle" placeholder="Homework title / description...">
+      </div>
+      <div class="form-row">
+        <input type="date" class="form-input" id="hwDueDate" style="max-width:160px">
+        <select class="form-select" id="hwPriority">
+          <option value="high">🔴 High</option>
+          <option value="med" selected>🟠 Medium</option>
+          <option value="low">🔵 Low</option>
+        </select>
+        <button class="btn-add" onclick="addHomework()">Add</button>
+      </div>
+      <input type="text" class="form-input" id="hwNote" placeholder="Optional note..." style="margin-top:4px">
+    </div>
+
+    <div class="hw-filter-row">
+      <div class="hw-filter active" onclick="setHWFilter('all',this)">All</div>
+      <div class="hw-filter" onclick="setHWFilter('pending',this)">⏳ Pending</div>
+      <div class="hw-filter" onclick="setHWFilter('done',this)">✅ Done</div>
+      <div class="hw-filter" onclick="setHWFilter('overdue',this)">🔴 Overdue</div>
+      <div class="hw-filter" onclick="setHWFilter('maths',this)">📐 Maths</div>
+      <div class="hw-filter" onclick="setHWFilter('physics',this)">⚡ Physics</div>
+      <div class="hw-filter" onclick="setHWFilter('ict',this)">💻 ICT</div>
+    </div>
+
+    <div class="hw-list" id="hwList"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-btn active" id="nav-planner" onclick="switchView('planner')"><div>📅</div>PLANNER</div>
+  <div class="nav-btn" id="nav-homework" onclick="switchView('homework')"><div>📋</div>HOMEWORK</div>
+  <div class="nav-btn" id="nav-analytics" onclick="switchView('analytics')"><div>📊</div>ANALYTICS</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const QUOTES = [
+  "Every expert was once a beginner. You're building the foundation today.",
+  "Moratuwa is waiting for you. One focused day at a time.",
+  "AI Engineering isn't built in a day — but every day builds towards it.",
+  "Your future self will thank you for the work you do right now.",
+  "The harder you work today, the more options you'll have tomorrow.",
+  "Physics, Maths, ICT — three doors to the future you want.",
+  "Small daily improvements lead to stunning results over time.",
+  "Don't wish for it. Work for it.",
+  "Discipline is choosing what you want most over what you want now.",
+  "Your AL results are the launchpad. Build that launchpad strong.",
+  "The grind is temporary. The degree is permanent.",
+  "Consistency beats perfection every single time.",
+  "YouTube will always be there. This window won't. Focus now.",
+  "Rest is not giving up. Rest is preparing for tomorrow.",
+  "One recording at a time. One problem at a time. You've got this."
+];
+
+const BADGES_DEF = [
+  { id: 'first', emoji: '🌱', label: 'First Done', desc: 'Complete your first task' },
+  { id: 'day100', emoji: '💯', label: 'Perfect Day', desc: 'Complete 100% in a day' },
+  { id: 'streak3', emoji: '🔥', label: '3-Day Streak', desc: '3 days in a row 80%+' },
+  { id: 'streak7', emoji: '⚡', label: 'Week Warrior', desc: '7 days in a row 80%+' },
+  { id: 'allrec', emoji: '🎓', label: 'Recording Hero', desc: 'Done all 5 recordings' },
+  { id: 'exam', emoji: '📝', label: 'Exam Ready', desc: 'Complete exam day tasks' },
+  { id: 'yt2', emoji: '🎬', label: 'Balance Boss', desc: 'YouTube done 2 days straight' },
+  { id: 'neverquit', emoji: '🏆', label: 'Never Quit', desc: 'Complete any task after marking missed' },
+];
+
+const PLAN = [
+  { id: 'sat23', day: 'Saturday', date: 'May 23', emoji: '🏃', goal: 80, tasks: [
+    { id: 's23_1', time: '7:00am', name: 'Wake up, breakfast', cat: 'life', priority: 'low' },
+    { id: 's23_2', time: '7:30am', name: 'Physics Recording 1 — Part 1 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_3', time: '8:30am', name: 'Break 10 mins', cat: 'break', priority: 'low' },
+    { id: 's23_4', time: '8:40am', name: 'Physics Recording 1 — Part 2 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_5', time: '9:40am', name: 'Break 15 mins', cat: 'break', priority: 'low' },
+    { id: 's23_6', time: '9:55am', name: 'Physics Recording 1 — Part 3 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_7', time: '11:00am', name: 'Notes + practice problems 45 mins', cat: 'study', priority: 'high' },
+    { id: 's23_8', time: '11:45am', name: 'Lunch + rest + free time', cat: 'life', priority: 'low' },
+    { id: 's23_9', time: '1:00pm', name: 'Physics Recording 2 — Part 1 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_10', time: '2:00pm', name: 'Break 10 mins', cat: 'break', priority: 'low' },
+    { id: 's23_11', time: '2:10pm', name: 'Physics Recording 2 — Part 2 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_12', time: '3:10pm', name: 'Break 15 mins', cat: 'break', priority: 'low' },
+    { id: 's23_13', time: '3:25pm', name: 'Physics Recording 2 — Part 3 (1hr)', cat: 'study', priority: 'high' },
+    { id: 's23_14', time: '4:30pm', name: 'Notes + problems 45 mins', cat: 'study', priority: 'high' },
+    { id: 's23_15', time: '5:15pm', name: 'YouTube + Editing (2hr timer)', cat: 'yt', priority: 'med' },
+    { id: 's23_16', time: '7:15pm', name: 'Dinner + family time', cat: 'life', priority: 'low' },
+    { id: 's23_17', time: '8:30pm', name: 'Relax + favorite YouTubers', cat: 'free', priority: 'low' },
+    { id: 's23_18', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'sun24', day: 'Sunday', date: 'May 24', emoji: '📚', goal: 60, tasks: [
+    { id: 'u24_1', time: '5:00am', name: 'Wake up, breakfast, travel prep', cat: 'life', priority: 'high' },
+    { id: 'u24_2', time: '6:00am', name: 'Physics live class 🏫', cat: 'class', priority: 'high' },
+    { id: 'u24_3', time: '3:00pm', name: 'Home — eat and rest only', cat: 'life', priority: 'low' },
+    { id: 'u24_4', time: '5:30pm', name: 'Travel to ICT class', cat: 'life', priority: 'high' },
+    { id: 'u24_5', time: '6:00pm', name: 'ICT live class 💻', cat: 'class', priority: 'high' },
+    { id: 'u24_6', time: '10:00pm', name: 'Class ends — travel home', cat: 'life', priority: 'low' },
+    { id: 'u24_7', time: '10:30pm', name: 'Home — eat, wind down, sleep', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'mon25', day: 'Monday', date: 'May 25', emoji: '🏋️', goal: 80, tasks: [
+    { id: 'm25_1', time: '6:30am', name: 'Gym 💪', cat: 'gym', priority: 'med' },
+    { id: 'm25_2', time: '9:30am', name: 'Breakfast, freshen up', cat: 'life', priority: 'low' },
+    { id: 'm25_3', time: '10:00am', name: 'Maths Recording 1 — Part 1 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'm25_4', time: '11:00am', name: 'Break 10 mins', cat: 'break', priority: 'low' },
+    { id: 'm25_5', time: '11:10am', name: 'Maths Recording 1 — Part 2 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'm25_6', time: '12:10pm', name: 'Break 15 mins', cat: 'break', priority: 'low' },
+    { id: 'm25_7', time: '12:25pm', name: 'Maths Recording 1 — Part 3 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'm25_8', time: '1:30pm', name: 'Lunch + rest', cat: 'life', priority: 'low' },
+    { id: 'm25_9', time: '2:30pm', name: 'Notes + practice problems', cat: 'study', priority: 'high' },
+    { id: 'm25_10', time: '3:30pm', name: 'Maths exam prep — past papers', cat: 'study', priority: 'high' },
+    { id: 'm25_11', time: '5:00pm', name: 'Free time — friends, brothers', cat: 'free', priority: 'low' },
+    { id: 'm25_12', time: '7:00pm', name: 'Light ICT revision 45 mins', cat: 'study', priority: 'med' },
+    { id: 'm25_13', time: '8:00pm', name: 'Dinner + TV + relax', cat: 'life', priority: 'low' },
+    { id: 'm25_14', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'tue26', day: 'Tuesday', date: 'May 26', emoji: '🏋️', goal: 85, tasks: [
+    { id: 't26_1', time: '6:30am', name: 'Gym 💪', cat: 'gym', priority: 'med' },
+    { id: 't26_2', time: '9:30am', name: 'Breakfast, freshen up', cat: 'life', priority: 'low' },
+    { id: 't26_3', time: '10:00am', name: 'Maths Recording 2 — Part 1 (1hr)', cat: 'study', priority: 'high' },
+    { id: 't26_4', time: '11:00am', name: 'Break 10 mins', cat: 'break', priority: 'low' },
+    { id: 't26_5', time: '11:10am', name: 'Maths Recording 2 — Part 2 (1hr)', cat: 'study', priority: 'high' },
+    { id: 't26_6', time: '12:10pm', name: 'Break 15 mins', cat: 'break', priority: 'low' },
+    { id: 't26_7', time: '12:25pm', name: 'Maths Recording 2 — Part 3 (1hr)', cat: 'study', priority: 'high' },
+    { id: 't26_8', time: '1:30pm', name: 'Lunch + rest', cat: 'life', priority: 'low' },
+    { id: 't26_9', time: '2:30pm', name: 'Maths exam prep — weak topics', cat: 'study', priority: 'high' },
+    { id: 't26_10', time: '4:30pm', name: 'Break — chat, walk, relax', cat: 'break', priority: 'low' },
+    { id: 't26_11', time: '5:00pm', name: 'YouTube + Editing (2hr timer)', cat: 'yt', priority: 'med' },
+    { id: 't26_12', time: '7:00pm', name: 'Light Physics revision 45 mins', cat: 'study', priority: 'med' },
+    { id: 't26_13', time: '8:00pm', name: 'Dinner + family + TV', cat: 'life', priority: 'low' },
+    { id: 't26_14', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'wed27', day: 'Wednesday', date: 'May 27 ⚠️ CLASS', emoji: '📐', goal: 80, tasks: [
+    { id: 'w27_1', time: '5:30am', name: 'Wake up, breakfast, travel prep', cat: 'life', priority: 'high' },
+    { id: 'w27_2', time: '6:00am', name: 'Combined Maths live class 📐', cat: 'class', priority: 'high' },
+    { id: 'w27_3', time: '3:00pm', name: 'Home — rest and recover', cat: 'life', priority: 'low' },
+    { id: 'w27_4', time: '4:30pm', name: 'Quick revision for tomorrow exam', cat: 'study', priority: 'high' },
+    { id: 'w27_5', time: '6:30pm', name: 'Dinner + relax', cat: 'life', priority: 'low' },
+    { id: 'w27_6', time: '8:00pm', name: 'Light review — notes only', cat: 'study', priority: 'med' },
+    { id: 'w27_7', time: '10:00pm', name: 'Sleep early — exam tomorrow! 😴', cat: 'life', priority: 'high' },
+  ]},
+  { id: 'thu28', day: 'Thursday', date: 'May 28 📝 EXAM', emoji: '📝', goal: 70, tasks: [
+    { id: 'h28_1', time: '6:30am', name: 'Wake up, light breakfast', cat: 'life', priority: 'high' },
+    { id: 'h28_2', time: '7:00am', name: 'Quick revision — notes only, NO new topics', cat: 'study', priority: 'high' },
+    { id: 'h28_3', time: '8:30am', name: 'Relax, calm down, get ready', cat: 'life', priority: 'med' },
+    { id: 'h28_4', time: '9:00am', name: '🎯 MATHS EXAM + Travel to class', cat: 'exam', priority: 'high' },
+    { id: 'h28_5', time: '3:00pm', name: 'Home — rest, you earned it!', cat: 'life', priority: 'low' },
+    { id: 'h28_6', time: '5:00pm', name: 'Free time — YouTube, brothers, fun', cat: 'free', priority: 'low' },
+    { id: 'h28_7', time: '8:00pm', name: 'Dinner + TV + relax', cat: 'life', priority: 'low' },
+    { id: 'h28_8', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'fri29', day: 'Friday', date: 'May 29', emoji: '🏋️', goal: 80, tasks: [
+    { id: 'f29_1', time: '6:30am', name: 'Gym 💪', cat: 'gym', priority: 'med' },
+    { id: 'f29_2', time: '9:30am', name: 'Breakfast, freshen up', cat: 'life', priority: 'low' },
+    { id: 'f29_3', time: '10:00am', name: 'Maths Recording 3 — Part 1 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'f29_4', time: '11:00am', name: 'Break 10 mins', cat: 'break', priority: 'low' },
+    { id: 'f29_5', time: '11:10am', name: 'Maths Recording 3 — Part 2 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'f29_6', time: '12:10pm', name: 'Break 15 mins', cat: 'break', priority: 'low' },
+    { id: 'f29_7', time: '12:25pm', name: 'Maths Recording 3 — Part 3 (1hr)', cat: 'study', priority: 'high' },
+    { id: 'f29_8', time: '1:30pm', name: 'Lunch + rest', cat: 'life', priority: 'low' },
+    { id: 'f29_9', time: '2:30pm', name: 'Notes + practice problems', cat: 'study', priority: 'high' },
+    { id: 'f29_10', time: '3:30pm', name: 'YouTube + Editing (2hr timer)', cat: 'yt', priority: 'med' },
+    { id: 'f29_11', time: '5:30pm', name: 'Free time — friends, brothers', cat: 'free', priority: 'low' },
+    { id: 'f29_12', time: '7:00pm', name: 'Light ICT or Physics revision 45 mins', cat: 'study', priority: 'med' },
+    { id: 'f29_13', time: '8:00pm', name: 'Dinner + TV + relax', cat: 'life', priority: 'low' },
+    { id: 'f29_14', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'sat30', day: 'Saturday 🪔', date: 'May 30 — Vesak', emoji: '🪔', goal: 50, tasks: [
+    { id: 's30_1', time: '7:00am', name: 'Wake naturally — no alarm', cat: 'life', priority: 'low' },
+    { id: 's30_2', time: '7:30am', name: 'Breakfast + relax', cat: 'life', priority: 'low' },
+    { id: 's30_3', time: '9:00am', name: 'Light Maths revision 1 hour (if home)', cat: 'study', priority: 'med' },
+    { id: 's30_4', time: '10:00am', name: 'Free — family, friends, Vesak', cat: 'free', priority: 'low' },
+    { id: 's30_5', time: '12:00pm', name: 'Lunch', cat: 'life', priority: 'low' },
+    { id: 's30_6', time: '1:00pm', name: 'Rest + nap if needed', cat: 'life', priority: 'low' },
+    { id: 's30_7', time: '2:00pm', name: 'YouTube + Editing (if home — 2hr timer)', cat: 'yt', priority: 'low' },
+    { id: 's30_8', time: '4:00pm', name: 'Vesak celebrations + go out', cat: 'free', priority: 'low' },
+    { id: 's30_9', time: '8:00pm', name: 'Dinner + TV + relax', cat: 'life', priority: 'low' },
+    { id: 's30_10', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+  { id: 'sun31', day: 'Sunday 🪔', date: 'May 31 — Vesak', emoji: '🎆', goal: 50, tasks: [
+    { id: 'u31_1', time: '7:00am', name: 'Wake naturally — no alarm', cat: 'life', priority: 'low' },
+    { id: 'u31_2', time: '7:30am', name: 'Breakfast + relax', cat: 'life', priority: 'low' },
+    { id: 'u31_3', time: '9:00am', name: 'Light ICT revision 1 hour (if home)', cat: 'study', priority: 'med' },
+    { id: 'u31_4', time: '10:00am', name: 'Free — family, Vesak, enjoy fully', cat: 'free', priority: 'low' },
+    { id: 'u31_5', time: '12:00pm', name: 'Lunch', cat: 'life', priority: 'low' },
+    { id: 'u31_6', time: '1:00pm', name: 'Rest', cat: 'life', priority: 'low' },
+    { id: 'u31_7', time: '2:00pm', name: 'YouTube + Editing (if home — 2hr timer)', cat: 'yt', priority: 'low' },
+    { id: 'u31_8', time: '4:00pm', name: 'Go out — celebrations, family time', cat: 'free', priority: 'low' },
+    { id: 'u31_9', time: '8:00pm', name: 'Dinner + relax', cat: 'life', priority: 'low' },
+    { id: 'u31_10', time: '10:30pm', name: 'Sleep 😴', cat: 'life', priority: 'low' },
+  ]},
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let state = loadState();
+let timers = {};
+let editMode = {};
+let addColor = '#6c63ff';
+
+const JSONBIN_KEY = '$2a$10$k6TuWbsMGoQaOK4kuRRDeO5bkrTZfB6iZ31gmcRJX.Pk4yjkF01ie';
+const BIN_NAME = 'studyplanner_v3';
+let BIN_ID = localStorage.getItem('jsonbin_bin_id') || null;
+let syncTimeout = null;
+let syncStatus = 'idle'; // idle | saving | saved | error
+
+function freshState() {
+  const s = { tasks:{}, goals:{}, notes:{}, pinned:{}, carryForward:[], badges:[], streak:0, lastStreak:null, homework:[] };
+  PLAN.forEach(day => {
+    day.tasks.forEach(t => { s.tasks[t.id] = 'none'; });
+    s.goals[day.id] = day.goal;
+  });
+  return s;
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('studyplanner_v3');
+    if (saved) return JSON.parse(saved);
+  } catch(e){}
+  return freshState();
+}
+
+function saveState() {
+  try { localStorage.setItem('studyplanner_v3', JSON.stringify(state)); } catch(e){}
+  // Debounce cloud sync — wait 1.5s after last change
+  clearTimeout(syncTimeout);
+  setSyncStatus('saving');
+  syncTimeout = setTimeout(() => cloudSave(), 1500);
+}
+
+function setSyncStatus(s) {
+  syncStatus = s;
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  const map = { idle:'', saving:'☁️ Syncing...', saved:'✅ Synced', error:'⚠️ Sync failed' };
+  const col = { idle:'var(--text3)', saving:'var(--accent2)', saved:'var(--green)', error:'var(--red)' };
+  el.textContent = map[s];
+  el.style.color = col[s];
+}
+
+async function cloudSave() {
+  try {
+    if (!BIN_ID) {
+      // Create new bin
+      const res = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_KEY, 'X-Bin-Name': BIN_NAME, 'X-Bin-Private': 'true' },
+        body: JSON.stringify(state)
+      });
+      const data = await res.json();
+      BIN_ID = data.metadata?.id;
+      if (BIN_ID) { localStorage.setItem('jsonbin_bin_id', BIN_ID); setSyncStatus('saved'); }
+      else setSyncStatus('error');
+    } else {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + BIN_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type':'application/json', 'X-Master-Key': JSONBIN_KEY },
+        body: JSON.stringify(state)
+      });
+      if (res.ok) setSyncStatus('saved');
+      else setSyncStatus('error');
+    }
+  } catch(e) { setSyncStatus('error'); }
+}
+
+async function cloudLoad() {
+  setSyncStatus('saving');
+  try {
+    if (!BIN_ID) {
+      // Try to find existing bin by name
+      const res = await fetch('https://api.jsonbin.io/v3/b?page=1', {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      // If no bin found, just use local
+      setSyncStatus('idle');
+      return;
+    }
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.record) {
+        state = data.record;
+        localStorage.setItem('studyplanner_v3', JSON.stringify(state));
+        setSyncStatus('saved');
+        updateAll();
+        buildDays();
+        renderHomework();
+        buildAnalytics();
+      }
+    } else setSyncStatus('error');
+  } catch(e) { setSyncStatus('error'); }
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  setQuote();
+  buildTabs();
+  buildDays();
+  updateAll();
+  buildAnalytics();
+  // Open today's tab
+  const today = new Date();
+  const dayMap = {23:'sat23',24:'sun24',25:'mon25',26:'tue26',27:'wed27',28:'thu28',29:'fri29',30:'sat30',31:'sun31'};
+  const todayId = dayMap[today.getDate()];
+  if (todayId) openDay(todayId); else openDay('sat23');
+}
+
+function setQuote() {
+  const idx = new Date().getDate() % QUOTES.length;
+  document.getElementById('quoteText').textContent = QUOTES[idx];
+}
+
+function buildTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  PLAN.forEach((day, i) => {
+    const t = document.createElement('div');
+    t.className = 'tab' + (i===0?' active':'');
+    t.id = 'tab_' + day.id;
+    t.textContent = day.emoji + ' ' + day.date;
+    t.onclick = () => openDay(day.id);
+    tabs.appendChild(t);
+  });
+}
+
+function openDay(dayId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.day-section').forEach(d => d.classList.remove('active'));
+  const tab = document.getElementById('tab_' + dayId);
+  const sec = document.getElementById('sec_' + dayId);
+  if (tab) tab.classList.add('active');
+  if (sec) sec.classList.add('active');
+  // scroll tab into view
+  if (tab) tab.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+
+function buildDays() {
+  const container = document.getElementById('daySections');
+  container.innerHTML = '';
+  PLAN.forEach(day => {
+    const sec = document.createElement('div');
+    sec.className = 'day-section';
+    sec.id = 'sec_' + day.id;
+    sec.innerHTML = buildDayHTML(day);
+    container.appendChild(sec);
+  });
+}
+
+function buildDayHTML(day) {
+  const goal = state.goals[day.id] || day.goal;
+  return `
+  <div class="day-header">
+    <div class="day-info">
+      <div class="day-name">${day.emoji} ${day.day}</div>
+      <div class="day-date">${day.date}</div>
+    </div>
+    <div class="day-actions">
+      <button class="btn-icon" onclick="notifyDay('${day.id}')" title="Set reminder">🔔</button>
+      <button class="btn-icon" id="editBtn_${day.id}" onclick="toggleEdit('${day.id}')" title="Edit tasks">✏️</button>
+    </div>
+  </div>
+
+  <div class="day-progress">
+    <div class="day-progress-top">
+      <div class="day-pct" id="pct_${day.id}">0%</div>
+      <div class="day-grade" id="grade_${day.id}">—</div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="bar_${day.id}" style="width:0%;background:var(--green)"></div></div>
+    <div class="goal-row">
+      🎯 Daily goal: <input type="number" class="goal-input" id="goal_${day.id}" value="${goal}" min="0" max="100" onchange="setGoal('${day.id}', this.value)">%
+    </div>
+  </div>
+
+  <div class="add-task-panel" id="addPanel_${day.id}">
+    <h4>➕ Add Task</h4>
+    <div class="form-row">
+      <input type="time" class="form-input" id="newTime_${day.id}" style="max-width:120px">
+      <input type="text" class="form-input" id="newTask_${day.id}" placeholder="Task name...">
+    </div>
+    <div class="form-row" style="align-items:center">
+      <select class="form-select" id="newPri_${day.id}">
+        <option value="high">🔴 High</option>
+        <option value="med" selected>🟠 Medium</option>
+        <option value="low">🔵 Low</option>
+      </select>
+      <div class="color-dots" id="colorDots_${day.id}">
+        ${['#6c63ff','#00d4aa','#ff6b6b','#ffd166','#a855f7','#3b82f6'].map(c=>`<div class="color-dot" style="background:${c}" onclick="pickColor('${day.id}','${c}',this)"></div>`).join('')}
+      </div>
+      <button class="btn-add" onclick="addTask('${day.id}')">Add</button>
+    </div>
+  </div>
+
+  <div class="task-list" id="list_${day.id}"></div>
+  <div id="missed_${day.id}"></div>
+  `;
+}
+
+function renderDayTasks(day) {
+  const list = document.getElementById('list_' + day.id);
+  if (!list) return;
+
+  // Gather all tasks for this day (original + custom)
+  let tasks = [...day.tasks];
+  // Add custom tasks
+  const customKey = 'custom_' + day.id;
+  const customs = state[customKey] || [];
+  tasks = tasks.concat(customs);
+
+  // Sort pinned first, then by time
+  tasks.sort((a,b) => {
+    if ((state.pinned[a.id]||false) && !(state.pinned[b.id]||false)) return -1;
+    if (!(state.pinned[a.id]||false) && (state.pinned[b.id]||false)) return 1;
+    return timeToMins(a.time) - timeToMins(b.time);
+  });
+
+  list.innerHTML = tasks.map(t => renderTask(t, day.id)).join('');
+  updateDayProgress(day);
+  renderMissedSummary(day, tasks);
+}
+
+function renderTask(t, dayId) {
+  const status = state.tasks[t.id] || 'none';
+  const note = state.notes[t.id] || '';
+  const pinned = state.pinned[t.id] || false;
+  const isCustom = !PLAN.find(d => d.tasks.find(x => x.id === t.id));
+
+  let checkContent = status === 'done' ? '✓' : status === 'missed' ? '✗' : '';
+  let priorityBadge = '';
+  if (t.priority === 'high') priorityBadge = '<span class="priority-badge p-high">🔴 HIGH</span>';
+  else if (t.priority === 'med') priorityBadge = '<span class="priority-badge p-med">🟠 MED</span>';
+
+  let mustBadge = status === 'missed' && t.priority === 'high' ?
+    '<span class="must-badge">⚠️ MUST DO</span>' : '';
+
+  let noteHtml = note ? `<div class="task-note">📝 ${note}</div>` : '';
+
+  let timerHtml = `
+    <div class="timer-bar" id="timerBar_${t.id}" style="display:none">
+      <div class="timer-top">
+        <span class="timer-display" id="timerDisp_${t.id}">0:00:00</span>
+        <div class="timer-controls">
+          <button class="timer-btn" id="timerPlayBtn_${t.id}" onclick="startTimer('${t.id}')">▶ Start</button>
+          <button class="timer-btn" onclick="pauseTimer('${t.id}')">⏸ Pause</button>
+          <button class="timer-btn" onclick="resetTimer('${t.id}')">↺ Reset</button>
+        </div>
+      </div>
+      <div class="timer-presets">
+        <span style="font-size:11px;color:var(--text3);margin-right:2px">Quick set:</span>
+        <button class="preset-btn" onclick="setTimerPreset('${t.id}',30)">30min</button>
+        <button class="preset-btn" onclick="setTimerPreset('${t.id}',60)">1hr</button>
+        <button class="preset-btn" onclick="setTimerPreset('${t.id}',90)">1.5hr</button>
+        <button class="preset-btn" onclick="setTimerPreset('${t.id}',120)">2hr</button>
+        <button class="preset-btn" onclick="setTimerPreset('${t.id}',180)">3hr</button>
+      </div>
+      <div class="timer-label" id="timerLbl_${t.id}">⏱ STOPWATCH MODE</div>
+    </div>`;
+
+  const dot = t.dotColor ? `<span style="display:inline-block;width:8px;height:8px;background:${t.dotColor};border-radius:50%;margin-right:4px"></span>` : '';
+
+  const editBtns = editMode[dayId] ? `
+    <button class="task-btn del-btn" onclick="deleteTask('${t.id}','${dayId}')">🗑 Remove</button>
+  ` : '';
+
+  return `
+  <div class="task-item ${status} ${pinned?'pinned':''}" id="task_${t.id}">
+    <div class="task-top">
+      <div class="task-check" onclick="cycleTask('${t.id}','${dayId}')">${checkContent}</div>
+      <div class="task-body">
+        <div class="task-time">${t.time}</div>
+        <div class="task-name">${dot}${t.name}</div>
+        <div class="task-meta">
+          ${priorityBadge}${mustBadge}
+        </div>
+        <div class="task-actions">
+          <button class="task-btn ${pinned?'pin-active':''}" onclick="togglePin('${t.id}','${dayId}')">📌 ${pinned?'Pinned':'Pin'}</button>
+          <button class="task-btn" onclick="toggleNote('${t.id}')">📝 Note</button>
+          <button class="task-btn" onclick="toggleTimer('${t.id}')">⏱ Timer</button>
+          ${status==='missed'?`<button class="task-btn carry-btn" onclick="carryForward('${t.id}','${t.name}')">↪ Carry</button>`:''}
+          ${editBtns}
+        </div>
+        ${noteHtml}
+        <textarea class="note-input" id="noteInput_${t.id}" placeholder="Add a note..." style="display:none" onblur="saveNote('${t.id}',this.value)">${note}</textarea>
+        ${timerHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderMissedSummary(day, tasks) {
+  const el = document.getElementById('missed_' + day.id);
+  if (!el) return;
+  const missed = tasks.filter(t => (state.tasks[t.id]||'none') === 'missed' && t.priority === 'high');
+  if (!missed.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="missed-summary">
+      <h4>⚠️ Missed Critical Tasks — Must Complete!</h4>
+      ${missed.map(t => `<div class="missed-item">❌ ${t.time} — ${t.name}</div>`).join('')}
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────────
+function cycleTask(taskId, dayId) {
+  const cur = state.tasks[taskId] || 'none';
+  const next = cur === 'none' ? 'done' : cur === 'done' ? 'missed' : 'none';
+  state.tasks[taskId] = next;
+  saveState();
+  // badges
+  if (next === 'done') checkBadge('first');
+  // Re-render
+  const day = getDayById(dayId);
+  renderDayTasks(day);
+  updateAll();
+  buildAnalytics();
+  showToast(next === 'done' ? '✅ Task done!' : next === 'missed' ? '❌ Marked missed' : '↩ Reset');
+  // Confetti if day 100%
+  checkDayComplete(dayId);
+}
+
+function togglePin(taskId, dayId) {
+  state.pinned[taskId] = !state.pinned[taskId];
+  saveState();
+  renderDayTasks(getDayById(dayId));
+  showToast(state.pinned[taskId] ? '📌 Pinned!' : '📌 Unpinned');
+}
+
+function toggleNote(taskId) {
+  const inp = document.getElementById('noteInput_' + taskId);
+  const noteEl = document.getElementById('task_' + taskId)?.querySelector('.task-note');
+  if (!inp) return;
+  const showing = inp.style.display !== 'none';
+  inp.style.display = showing ? 'none' : 'block';
+  if (!showing) inp.focus();
+}
+
+function saveNote(taskId, val) {
+  state.notes[taskId] = val;
+  saveState();
+}
+
+function toggleTimer(taskId) {
+  const bar = document.getElementById('timerBar_' + taskId);
+  if (!bar) return;
+  bar.style.display = bar.style.display === 'none' ? 'flex' : 'none';
+}
+
+let timerIntervals = {};
+let timerSeconds = {};
+
+let timerCountdown = {}; // true = countdown mode, false = stopwatch
+
+function setTimerPreset(taskId, mins) {
+  pauseTimer(taskId);
+  timerSeconds[taskId] = mins * 60;
+  timerCountdown[taskId] = true;
+  updateTimerDisplay(taskId);
+  const lbl = document.getElementById('timerLbl_' + taskId);
+  if (lbl) lbl.textContent = '⏳ COUNTDOWN — ' + (mins >= 60 ? Math.floor(mins/60) + 'h ' + (mins%60||'') + (mins%60?'min':'') : mins + 'min');
+}
+
+function startTimer(taskId) {
+  if (timerIntervals[taskId]) return;
+  if (!timerSeconds[taskId]) timerSeconds[taskId] = 0;
+  const disp = document.getElementById('timerDisp_' + taskId);
+  const btn = document.getElementById('timerPlayBtn_' + taskId);
+  if (disp) disp.classList.add('running');
+  if (btn) btn.classList.add('running-btn');
+  timerIntervals[taskId] = setInterval(() => {
+    if (timerCountdown[taskId]) {
+      timerSeconds[taskId]--;
+      if (timerSeconds[taskId] <= 0) {
+        timerSeconds[taskId] = 0;
+        updateTimerDisplay(taskId);
+        pauseTimer(taskId);
+        showToast('⏰ Timer done for task!');
+        if (Notification.permission === 'granted') new Notification('⏰ Time is up!', {body: 'Your study timer finished!'});
+        return;
+      }
+    } else {
+      timerSeconds[taskId]++;
+    }
+    updateTimerDisplay(taskId);
+  }, 1000);
+}
+function pauseTimer(taskId) {
+  clearInterval(timerIntervals[taskId]);
+  delete timerIntervals[taskId];
+  const disp = document.getElementById('timerDisp_' + taskId);
+  const btn = document.getElementById('timerPlayBtn_' + taskId);
+  if (disp) disp.classList.remove('running');
+  if (btn) btn.classList.remove('running-btn');
+}
+function resetTimer(taskId) {
+  pauseTimer(taskId);
+  timerSeconds[taskId] = 0;
+  timerCountdown[taskId] = false;
+  updateTimerDisplay(taskId);
+  const lbl = document.getElementById('timerLbl_' + taskId);
+  if (lbl) lbl.textContent = '⏱ STOPWATCH MODE';
+}
+function updateTimerDisplay(taskId) {
+  const el = document.getElementById('timerDisp_' + taskId);
+  if (!el) return;
+  const s = Math.abs(timerSeconds[taskId] || 0);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  el.textContent = h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+
+function toggleEdit(dayId) {
+  editMode[dayId] = !editMode[dayId];
+  const btn = document.getElementById('editBtn_' + dayId);
+  const panel = document.getElementById('addPanel_' + dayId);
+  if (btn) btn.classList.toggle('active-edit', editMode[dayId]);
+  if (panel) panel.classList.toggle('open', editMode[dayId]);
+  renderDayTasks(getDayById(dayId));
+}
+
+function pickColor(dayId, color, el) {
+  addColor = color;
+  document.querySelectorAll(`#colorDots_${dayId} .color-dot`).forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function addTask(dayId) {
+  const timeEl = document.getElementById('newTime_' + dayId);
+  const nameEl = document.getElementById('newTask_' + dayId);
+  const priEl = document.getElementById('newPri_' + dayId);
+  const name = nameEl.value.trim();
+  if (!name) { showToast('⚠️ Enter a task name!'); return; }
+  const timeVal = timeEl.value ? formatTime12(timeEl.value) : 'Any time';
+  const newTask = {
+    id: 'custom_' + Date.now(),
+    time: timeVal,
+    name,
+    priority: priEl.value,
+    cat: 'custom',
+    dotColor: addColor
+  };
+  if (!state['custom_' + dayId]) state['custom_' + dayId] = [];
+  state['custom_' + dayId].push(newTask);
+  state.tasks[newTask.id] = 'none';
+  saveState();
+  nameEl.value = '';
+  timeEl.value = '';
+  renderDayTasks(getDayById(dayId));
+  updateAll();
+  showToast('✅ Task added!');
+}
+
+function deleteTask(taskId, dayId) {
+  // Only delete custom tasks
+  const customKey = 'custom_' + dayId;
+  if (state[customKey]) {
+    state[customKey] = state[customKey].filter(t => t.id !== taskId);
+    delete state.tasks[taskId];
+    saveState();
+    renderDayTasks(getDayById(dayId));
+    updateAll();
+    showToast('🗑 Task removed');
+  }
+}
+
+function carryForward(taskId, name) {
+  if (!state.carryForward) state.carryForward = [];
+  if (!state.carryForward.find(c => c.id === taskId)) {
+    state.carryForward.push({ id: taskId, name });
+    saveState();
+    showToast('↪ Added to carry-forward list');
+    buildAnalytics();
+  }
+}
+
+function setGoal(dayId, val) {
+  state.goals[dayId] = parseInt(val) || 0;
+  saveState();
+  updateDayProgress(getDayById(dayId));
+  updateAll();
+}
+
+function notifyDay(dayId) {
+  if (!('Notification' in window)) { showToast('⚠️ Notifications not supported'); return; }
+  Notification.requestPermission().then(p => {
+    if (p === 'granted') {
+      new Notification('📚 Study Reminder', { body: 'Time to check your plan for today!', icon: '📚' });
+      showToast('🔔 Notification sent!');
+    } else {
+      showToast('⚠️ Please allow notifications in browser');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// PROGRESS & STATS
+// ─────────────────────────────────────────────
+function updateDayProgress(day) {
+  if (!day) return;
+  const allTasks = getAllTasksForDay(day);
+  const total = allTasks.length;
+  const done = allTasks.filter(t => state.tasks[t.id] === 'done').length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const goal = state.goals[day.id] || day.goal;
+
+  const pctEl = document.getElementById('pct_' + day.id);
+  const barEl = document.getElementById('bar_' + day.id);
+  const gradeEl = document.getElementById('grade_' + day.id);
+
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (barEl) {
+    barEl.style.width = pct + '%';
+    barEl.style.background = pct >= goal ? 'var(--green)' : pct >= goal*0.7 ? 'var(--orange)' : 'var(--red)';
+  }
+  if (gradeEl) {
+    const {grade, cls} = getGrade(pct);
+    gradeEl.textContent = grade;
+    gradeEl.className = 'day-grade ' + cls;
+  }
+}
+
+function getGrade(pct) {
+  if (pct >= 90) return {grade:'A+ 🌟', cls:'grade-a'};
+  if (pct >= 75) return {grade:'B+ 💪', cls:'grade-b'};
+  if (pct >= 60) return {grade:'C+ 🙂', cls:'grade-c'};
+  if (pct >= 40) return {grade:'D 😓', cls:'grade-d'};
+  return {grade:'F 😔', cls:'grade-f'};
+}
+
+function updateAll() {
+  let totalDone = 0, totalMissed = 0, totalTasks = 0;
+  PLAN.forEach(day => {
+    const tasks = getAllTasksForDay(day);
+    totalTasks += tasks.length;
+    totalDone += tasks.filter(t => state.tasks[t.id] === 'done').length;
+    totalMissed += tasks.filter(t => state.tasks[t.id] === 'missed').length;
+    renderDayTasks(day);
+  });
+  const pct = totalTasks ? Math.round(totalDone/totalTasks*100) : 0;
+  document.getElementById('weekProgressFill').style.width = pct + '%';
+  document.getElementById('statDone').textContent = totalDone;
+  document.getElementById('statMissed').textContent = totalMissed;
+  document.getElementById('statTotal').textContent = totalTasks;
+  document.getElementById('statWeekPct').textContent = pct + '%';
+  document.getElementById('scDone').textContent = totalDone;
+  document.getElementById('scMissed').textContent = totalMissed;
+  const {grade} = getGrade(pct);
+  document.getElementById('weekGrade').textContent = grade.split(' ')[0];
+  // Streak
+  calcStreak();
+  checkBadges(totalDone, pct);
+}
+
+function calcStreak() {
+  let streak = 0;
+  for (let i = 0; i < PLAN.length; i++) {
+    const day = PLAN[i];
+    const tasks = getAllTasksForDay(day);
+    const done = tasks.filter(t => state.tasks[t.id] === 'done').length;
+    const pct = tasks.length ? done/tasks.length*100 : 0;
+    if (pct >= 80) streak++;
+    else if (tasks.some(t => state.tasks[t.id] !== 'none')) break;
+  }
+  state.streak = streak;
+  document.getElementById('streakBadge').textContent = '🔥 ' + streak + ' day streak';
+  document.getElementById('scStreak').textContent = streak + '🔥';
+}
+
+function checkDayComplete(dayId) {
+  const day = getDayById(dayId);
+  if (!day) return;
+  const tasks = getAllTasksForDay(day);
+  const done = tasks.filter(t => state.tasks[t.id] === 'done').length;
+  if (done === tasks.length && tasks.length > 0) {
+    launchConfetti();
+    showToast('🎉 Day Complete! Amazing work!');
+    checkBadge('day100');
+  }
+}
+
+function checkBadges(totalDone, pct) {
+  if (totalDone >= 1) checkBadge('first');
+  if (state.streak >= 3) checkBadge('streak3');
+  if (state.streak >= 7) checkBadge('streak7');
+}
+
+function checkBadge(id) {
+  if (!state.badges) state.badges = [];
+  if (!state.badges.includes(id)) {
+    state.badges.push(id);
+    saveState();
+    const b = BADGES_DEF.find(x => x.id === id);
+    if (b) showToast('🏆 Badge unlocked: ' + b.label + '!');
+    buildAnalytics();
+  }
+}
+
+// ─────────────────────────────────────────────
+// ANALYTICS
+// ─────────────────────────────────────────────
+function buildAnalytics() {
+  buildBarChart();
+  buildMissPattern();
+  buildBadges();
+  buildCarryList();
+}
+
+function buildBarChart() {
+  const el = document.getElementById('barChart');
+  if (!el) return;
+  el.innerHTML = PLAN.map(day => {
+    const tasks = getAllTasksForDay(day);
+    const done = tasks.filter(t => state.tasks[t.id] === 'done').length;
+    const pct = tasks.length ? Math.round(done/tasks.length*100) : 0;
+    const color = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--orange)' : 'var(--red)';
+    return `<div class="bar-col">
+      <div class="bar-val">${pct}%</div>
+      <div class="bar" style="height:${Math.max(pct*0.7,4)}px;background:${color}"></div>
+      <div class="bar-label">${day.date.split(' ')[1]||day.date}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildMissPattern() {
+  const el = document.getElementById('missPattern');
+  if (!el) return;
+  const cats = {};
+  PLAN.forEach(day => {
+    getAllTasksForDay(day).forEach(t => {
+      if (state.tasks[t.id] === 'missed') {
+        cats[t.cat||'other'] = (cats[t.cat||'other']||0)+1;
+      }
+    });
+  });
+  if (!Object.keys(cats).length) { el.innerHTML = '<span style="color:var(--text2)">No missed tasks yet — great!</span>'; return; }
+  const catNames = {study:'📚 Study',gym:'🏋️ Gym',yt:'🎬 YouTube',break:'☕ Break',life:'🏠 Life',class:'🏫 Class',free:'🎮 Free time',custom:'✏️ Custom'};
+  el.innerHTML = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,n])=>`
+    <div class="pattern-item">${catNames[cat]||cat}: <span>${n} missed</span></div>`).join('');
+}
+
+function buildBadges() {
+  const el = document.getElementById('badgesGrid');
+  if (!el) return;
+  el.innerHTML = BADGES_DEF.map(b => {
+    const unlocked = (state.badges||[]).includes(b.id);
+    return `<div class="badge ${unlocked?'unlocked':'locked'}" title="${b.desc}">${b.emoji} ${b.label}</div>`;
+  }).join('');
+}
+
+function buildCarryList() {
+  const el = document.getElementById('carryList');
+  if (!el) return;
+  const list = state.carryForward || [];
+  if (!list.length) { el.textContent = 'No carry-forward tasks yet.'; return; }
+  el.innerHTML = list.map(c=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:13px">↪ ${c.name}</div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+function getDayById(id) { return PLAN.find(d => d.id === id); }
+
+function getAllTasksForDay(day) {
+  const customs = state['custom_' + day.id] || [];
+  return [...day.tasks, ...customs];
+}
+
+function timeToMins(timeStr) {
+  if (!timeStr) return 9999;
+  const clean = timeStr.toLowerCase().replace(/\s/g,'');
+  const pm = clean.includes('pm');
+  const am = clean.includes('am');
+  const [h,m] = clean.replace('am','').replace('pm','').split(':').map(Number);
+  let hours = h||0;
+  if (pm && hours !== 12) hours += 12;
+  if (am && hours === 12) hours = 0;
+  return hours*60 + (m||0);
+}
+
+function formatTime12(val) {
+  const [h,m] = val.split(':').map(Number);
+  const ampm = h>=12?'pm':'am';
+  const h12 = h%12||12;
+  return h12 + ':' + String(m).padStart(2,'0') + ampm;
+}
+
+
+// ─────────────────────────────────────────────
+// HOMEWORK TRACKER
+// ─────────────────────────────────────────────
+let hwSubject = 'maths';
+let hwFilter = 'all';
+
+function pickHWSubj(s, el) {
+  hwSubject = s;
+  document.querySelectorAll('.hw-subj-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setHWFilter(f, el) {
+  hwFilter = f;
+  document.querySelectorAll('.hw-filter').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderHomework();
+}
+
+function addHomework() {
+  const title = document.getElementById('hwTitle').value.trim();
+  const due = document.getElementById('hwDueDate').value;
+  const priority = document.getElementById('hwPriority').value;
+  const note = document.getElementById('hwNote').value.trim();
+  if (!title) { showToast('⚠️ Enter a homework title!'); return; }
+  if (!state.homework) state.homework = [];
+  state.homework.push({
+    id: 'hw_' + Date.now(),
+    title, subject: hwSubject, due, priority, note,
+    done: false, addedAt: new Date().toISOString()
+  });
+  saveState();
+  document.getElementById('hwTitle').value = '';
+  document.getElementById('hwDueDate').value = '';
+  document.getElementById('hwNote').value = '';
+  renderHomework();
+  showToast('📋 Homework added!');
+}
+
+function toggleHWDone(id) {
+  const hw = (state.homework||[]).find(h => h.id === id);
+  if (!hw) return;
+  hw.done = !hw.done;
+  if (hw.done) hw.doneAt = new Date().toISOString();
+  saveState();
+  renderHomework();
+  if (hw.done) showToast('✅ Homework done! Great work!');
+}
+
+function deleteHW(id) {
+  state.homework = (state.homework||[]).filter(h => h.id !== id);
+  saveState();
+  renderHomework();
+  showToast('🗑 Removed');
+}
+
+function isOverdue(hw) {
+  if (!hw.due || hw.done) return false;
+  return new Date(hw.due) < new Date(new Date().toDateString());
+}
+
+function renderHomework() {
+  const list = state.homework || [];
+  const today = new Date().toISOString().split('T')[0];
+
+  // summary
+  const total = list.length;
+  const done = list.filter(h => h.done).length;
+  const overdue = list.filter(h => isOverdue(h)).length;
+  const tdEl = document.getElementById('hwTotal');
+  const dEl = document.getElementById('hwDone');
+  const oEl = document.getElementById('hwOverdue');
+  if (tdEl) tdEl.textContent = total;
+  if (dEl) dEl.textContent = done;
+  if (oEl) oEl.textContent = overdue;
+
+  // filter
+  let filtered = list;
+  if (hwFilter === 'done') filtered = list.filter(h => h.done);
+  else if (hwFilter === 'pending') filtered = list.filter(h => !h.done);
+  else if (hwFilter === 'overdue') filtered = list.filter(h => isOverdue(h));
+  else if (['maths','physics','ict','other'].includes(hwFilter)) filtered = list.filter(h => h.subject === hwFilter);
+
+  // sort: overdue first, then by due date, done last
+  filtered.sort((a,b) => {
+    if (a.done && !b.done) return 1;
+    if (!a.done && b.done) return -1;
+    if (isOverdue(a) && !isOverdue(b)) return -1;
+    if (!isOverdue(a) && isOverdue(b)) return 1;
+    if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+    return 0;
+  });
+
+  const subjColors = {maths:'hw-subj-maths',physics:'hw-subj-physics',ict:'hw-subj-ict',other:'hw-subj-other'};
+  const subjLabels = {maths:'📐 Maths',physics:'⚡ Physics',ict:'💻 ICT',other:'📌 Other'};
+  const priColors = {high:'var(--red)',med:'var(--orange)',low:'var(--blue)'};
+
+  const el = document.getElementById('hwList');
+  if (!el) return;
+
+  if (!filtered.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px;font-size:14px;">No homework here! 🎉</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(hw => {
+    const overdue = isOverdue(hw);
+    const dueStr = hw.due ? new Date(hw.due).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) : 'No due date';
+    const daysLeft = hw.due && !hw.done ? Math.ceil((new Date(hw.due) - new Date(today)) / 86400000) : null;
+    let daysStr = '';
+    if (daysLeft !== null) {
+      if (daysLeft < 0) daysStr = `<span class="hw-overdue-badge">⚠️ ${Math.abs(daysLeft)}d overdue</span>`;
+      else if (daysLeft === 0) daysStr = `<span class="hw-overdue-badge">⚠️ Due today!</span>`;
+      else if (daysLeft <= 2) daysStr = `<span style="font-size:11px;color:var(--orange)">⏰ ${daysLeft}d left</span>`;
+      else daysStr = `<span style="font-size:11px;color:var(--text3)">${daysLeft}d left</span>`;
+    }
+    return `
+    <div class="hw-item ${hw.done?'hw-done':''} ${overdue?'hw-overdue':''}" id="hwItem_${hw.id}">
+      <div class="hw-item-top">
+        <div class="hw-check" onclick="toggleHWDone('${hw.id}')">${hw.done?'✓':''}</div>
+        <div class="hw-body">
+          <span class="hw-subj-badge ${subjColors[hw.subject]||'hw-subj-other'}">${subjLabels[hw.subject]||hw.subject}</span>
+          <div class="hw-title">${hw.title}</div>
+          <div class="hw-meta">
+            <span class="hw-due">📅 ${dueStr}</span>
+            ${daysStr}
+            <span style="font-size:11px;color:${priColors[hw.priority]||'var(--text3)'}">● ${hw.priority.toUpperCase()}</span>
+          </div>
+          ${hw.note ? `<div class="hw-note-text">📝 ${hw.note}</div>` : ''}
+          <div class="hw-actions">
+            <button class="task-btn del-btn" onclick="deleteHW('${hw.id}')">🗑 Remove</button>
+            ${hw.done ? `<span style="font-size:11px;color:var(--green)">✅ Completed</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'analytics') buildAnalytics();
+  if (name === 'homework') renderHomework();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#6c63ff','#00d4aa','#ffd166','#ff6b6b','#a855f7','#3b82f6','#22c55e'];
+  for (let i=0;i<60;i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = (Math.random()*10+6) + 'px';
+    p.style.height = (Math.random()*10+6) + 'px';
+    p.style.borderRadius = Math.random()>0.5?'50%':'2px';
+    p.style.animationDuration = (Math.random()*2+2) + 's';
+    p.style.animationDelay = Math.random()*0.5 + 's';
+    container.appendChild(p);
+    setTimeout(()=>p.remove(), 4000);
+  }
+}
+
+init();
+// Load from cloud on startup
+if (BIN_ID) cloudLoad();
+
+// Auto-refresh every 30 seconds to sync across devices
+setInterval(() => {
+  if (BIN_ID && document.visibilityState === 'visible') {
+    cloudLoad();
+  }
+}, 30000);
+
+// Also sync immediately when tab becomes visible (switching from phone to PC)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && BIN_ID) {
+    cloudLoad();
+  }
+});
+</script>
+
+<div id="installBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#6c63ff,#00d4aa);padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;">
+  <div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;">📲 Install Study Planner</div>
+    <div style="font-size:11px;opacity:0.9">Works offline on your device!</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button id="installBtn" style="background:white;color:#6c63ff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Syne',sans-serif;">Install</button>
+    <button onclick="document.getElementById('installBanner').style.display='none'" style="background:rgba(255,255,255,0.2);color:white;border:none;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:12px;">✕</button>
+  </div>
+</div>
+
+<script>
+// PWA Install
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'flex';
+});
+
+document.getElementById('installBtn')?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner').style.display = 'none';
+  if (outcome === 'accepted') showToast('🎉 App installed!');
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').style.display = 'none';
+  showToast('✅ Study Planner installed!');
+});
+
+// Service Worker for offline support
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'studyplanner-v1';
+    const FONTS = [
+      'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Outfit:wght@300;400;600;700;800&display=swap'
+    ];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(FONTS).catch(()=>{})));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      if (e.request.url.includes('api.jsonbin.io')) return;
+      e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, {scope: '/'}).catch(()=>{});
+}
+</script>
+</body>
+</html>
